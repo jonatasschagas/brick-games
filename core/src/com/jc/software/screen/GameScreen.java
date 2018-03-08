@@ -14,10 +14,6 @@ import com.jc.software.gameobjects.ui.GameOverLabel;
 import com.jc.software.gameobjects.ui.ScoreLabel;
 import com.jc.software.logic.commands.LogicCommand;
 import com.jc.software.logic.commands.LogicCommandFactory;
-import com.jc.software.logic.commands.controls.LogicTurnDownCommand;
-import com.jc.software.logic.commands.controls.LogicTurnLeftCommand;
-import com.jc.software.logic.commands.controls.LogicTurnRightCommand;
-import com.jc.software.logic.commands.controls.LogicTurnUpCommand;
 import com.jc.software.logic.objects.LogicGame;
 import com.jc.software.logic.objects.LogicSnake;
 import com.jc.software.remote.GameServerHandler;
@@ -25,9 +21,7 @@ import com.jc.software.remote.GameServerHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.jc.software.GameConfiguration.FPS;
-import static com.jc.software.GameConfiguration.FRAME_PERIOD;
-import static com.jc.software.GameConfiguration.MAX_FRAMES_SKIPPED;
+import static com.jc.software.GameConfiguration.*;
 
 public class GameScreen implements Screen {
 
@@ -66,7 +60,7 @@ public class GameScreen implements Screen {
         beginTime = 0;
         sleepTime = 0;
         timeDiff = 0;
-        if(opponentAI != null) {
+        if (opponentAI != null) {
             opponentAIThread = new Thread(opponentAI);
             opponentAIThread.setName("Opponent-thread");
             opponentAIThread.start();
@@ -82,12 +76,12 @@ public class GameScreen implements Screen {
         batch.end();
     }
 
-    private void update(float deltaTime) {
+    private void update() {
         // calculating how many ticks to advance in the game
         long deltaMs = System.currentTimeMillis() - gameServerHandler.getGameState().getStartGameMillis();
         int ticksToNow = (int) ((deltaMs * FPS) / 1000);
         int ticksToAdvance = ticksToNow - gameServerHandler.getGameState().getTick();
-        for(int i = 0; i < ticksToAdvance; i++) {
+        for (int i = 0; i < ticksToAdvance; i++) {
             gameServerHandler.update();
         }
     }
@@ -114,7 +108,7 @@ public class GameScreen implements Screen {
             return;
         }
 
-        if(command != null) {
+        if (command != null) {
             gameServerHandler.registerCommand(command);
         }
     }
@@ -136,9 +130,9 @@ public class GameScreen implements Screen {
         // updating the game, rendering and locking the FPS
         beginTime = System.currentTimeMillis();
         readInputAndUpdateGraphics();
-        update(delta);
+        update();
         timeDiff = System.currentTimeMillis() - beginTime;
-        sleepTime = (int) (FRAME_PERIOD - timeDiff);
+        sleepTime = (int) (FRAME_PERIOD_IN_MILLIS - timeDiff);
         if (sleepTime > 0) {
             try {
                 Thread.sleep(sleepTime);
@@ -149,8 +143,8 @@ public class GameScreen implements Screen {
         // catches up in case it got behind the FPS
         int framesSkipped = 0;
         while (sleepTime < 0 && framesSkipped < MAX_FRAMES_SKIPPED) {
-            update(delta);
-            sleepTime += FRAME_PERIOD;
+            update();
+            sleepTime += TIME_TO_SLEEP;
             framesSkipped++;
         }
     }

@@ -151,24 +151,8 @@ public class LogicGame {
         return xa == xb && ya == yb;
     }
 
-    public LogicSnake getLogicSnake1() {
-        return logicSnake1;
-    }
-
-    public LogicSnake getLogicSnake2() {
-        return logicSnake2;
-    }
-
     public LogicSnakePiece getLogicSnakePiece() {
         return logicSnakePiece;
-    }
-
-    public int getScore1() {
-        return score1;
-    }
-
-    public int getScore2() {
-        return score2;
     }
 
     public GameStatus getGameStatus() {
@@ -195,14 +179,6 @@ public class LogicGame {
         }
     }
 
-    public LogicSnake getOpponentSnake(String myPlayerId) {
-        if (myPlayerId.equals(player1Id)) {
-            return logicSnake2;
-        } else {
-            return logicSnake1;
-        }
-    }
-
     public int getScoreByPlayerId(long playerId) {
         if (playerId == player1Id) {
             return score1;
@@ -221,17 +197,6 @@ public class LogicGame {
 
     public long getStartGameMillis() {
         return startGameMillis;
-    }
-
-    @Override
-    public String toString() {
-        return "LogicGame{" +
-                ", logicSnake1=" + logicSnake1 +
-                ", logicSnake2=" + logicSnake2 +
-                ", logicSnakePiece=" + logicSnakePiece +
-                ", score1=" + score1 +
-                ", score2=" + score2 +
-                ", gameStatus=" + gameStatus;
     }
 
     public void encode(ByteBuffer byteBuffer) {

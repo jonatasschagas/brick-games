@@ -15,7 +15,8 @@ public interface GameConfiguration {
     int SCREEN_HEIGHT_IN_TILES = SCREEN_HEIGHT/ TILE_SIZE;
 
     float FPS = 60.0f;
-    float FRAME_PERIOD = (1000f/FPS)/1000f;
+    float FRAME_PERIOD_IN_MILLIS = 1000f/FPS;
+    float TIME_TO_SLEEP = FRAME_PERIOD_IN_MILLIS/1000f;
     int MAX_FRAMES_SKIPPED = 5;
 
     // s = v*t

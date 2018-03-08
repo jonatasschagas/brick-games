@@ -1,5 +1,7 @@
 package com.jc.software.ai;
 
+import com.jc.software.logic.commands.controls.LogicTurnDownCommand;
+import com.jc.software.logic.commands.controls.LogicTurnLeftCommand;
 import com.jc.software.logic.commands.controls.LogicTurnRightCommand;
 import com.jc.software.logic.commands.controls.LogicTurnUpCommand;
 import com.jc.software.logic.objects.LogicGame;
@@ -10,8 +12,7 @@ import com.jc.software.remote.MockGameServer;
 
 import java.util.Random;
 
-import static com.jc.software.GameConfiguration.FRAME_PERIOD;
-import static com.jc.software.GameConfiguration.MAX_FRAMES_SKIPPED;
+import static com.jc.software.GameConfiguration.*;
 
 /**
  * Created by jonataschagas on 11/02/18.
@@ -42,6 +43,10 @@ public class OpponentAI implements Runnable {
         gameServerHandler = new GameServerHandler(playerId, MockGameServer.getInstance());
     }
 
+    public GameServerHandler getGameServerHandler() {
+        return gameServerHandler;
+    }
+
     public void update() {
         if (gameServerHandler.hasGameStarted()) {
 
@@ -49,11 +54,19 @@ public class OpponentAI implements Runnable {
             LogicSnake snake = game.getSnakeByPlayerId(playerId);
             LogicSnakePiece snakePiece = game.getLogicSnakePiece();
 
-            if ((snake.getBufferedDirection() == LogicSnake.Direction.UP || snake.getBufferedDirection() == LogicSnake.Direction.DOWN) &&
-                    snakePiece.getTileY() == snake.getTileY()) {
-                gameServerHandler.registerCommand(new LogicTurnRightCommand(snake.getId(), game.getTick()));
-            } else if (snake.getBufferedDirection() == LogicSnake.Direction.RIGHT && snakePiece.getTileY() != snake.getTileY()) {
-                gameServerHandler.registerCommand(new LogicTurnUpCommand(snake.getId(), game.getTick()));
+            if (snake.getTileY() + 1 == snakePiece.getTileY()) {
+                if(snake.getTileX() < snakePiece.getTileX()) {
+                    gameServerHandler.registerCommand(new LogicTurnRightCommand(snake.getId(), game.getTick()));
+                } else {
+                    gameServerHandler.registerCommand(new LogicTurnLeftCommand(snake.getId(), game.getTick()));
+                }
+            } else if (snake.getTileY() != snakePiece.getTileY()
+                    && snake.getTileX() + 1 == snakePiece.getTileX()) {
+                if(snake.getTileY() < snakePiece.getTileY()) {
+                    gameServerHandler.registerCommand(new LogicTurnUpCommand(snake.getId(), game.getTick()));
+                } else {
+                    gameServerHandler.registerCommand(new LogicTurnDownCommand(snake.getId(), game.getTick()));
+                }
             }
 
             gameServerHandler.update();
@@ -62,12 +75,15 @@ public class OpponentAI implements Runnable {
 
     @Override
     public void run() {
-        while (gameServerHandler.hasGameStarted()) {
+        while (true) {
+            if (!gameServerHandler.hasGameStarted()) {
+                continue;
+            }
             // updating the game, rendering and locking the FPS
             beginTime = System.currentTimeMillis();
             update();
             timeDiff = System.currentTimeMillis() - beginTime;
-            sleepTime = (int) (FRAME_PERIOD - timeDiff);
+            sleepTime = (int) (FRAME_PERIOD_IN_MILLIS - timeDiff);
             if (sleepTime > 0) {
                 try {
                     Thread.sleep(sleepTime);
@@ -78,7 +94,7 @@ public class OpponentAI implements Runnable {
             int framesSkipped = 0;
             while (sleepTime < 0 && framesSkipped < MAX_FRAMES_SKIPPED) {
                 update();
-                sleepTime += FRAME_PERIOD;
+                sleepTime += TIME_TO_SLEEP;
                 framesSkipped++;
             }
         }
