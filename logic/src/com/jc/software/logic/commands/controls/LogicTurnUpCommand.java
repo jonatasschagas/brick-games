@@ -1,25 +1,16 @@
 package com.jc.software.logic.commands.controls;
 
+import com.jc.software.logic.commands.LogicBaseCommand;
 import com.jc.software.logic.commands.LogicCommand;
 
 /**
  * Created by jonataschagas on 25/01/18.
  */
-public class LogicTurnUpCommand implements LogicCommand {
+public class LogicTurnUpCommand extends LogicBaseCommand {
 
-    private int targetId;
-
-    public LogicTurnUpCommand(int targetId) {
+    public LogicTurnUpCommand(int targetId, int tick) {
+        this.tick = tick;
         this.targetId = targetId;
-    }
-
-    @Override
-    public int getType() {
-        return LogicCommand.TURN_UP;
-    }
-
-    @Override
-    public int getTargetId() {
-        return targetId;
+        this.type = LogicCommand.TURN_UP;
     }
 }

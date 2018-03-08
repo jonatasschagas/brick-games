@@ -1,25 +1,17 @@
 package com.jc.software.logic.commands.controls;
 
+import com.jc.software.logic.commands.LogicBaseCommand;
 import com.jc.software.logic.commands.LogicCommand;
 
 /**
  * Created by jonataschagas on 25/01/18.
  */
-public class LogicTurnLeftCommand implements LogicCommand {
+public class LogicTurnLeftCommand extends LogicBaseCommand {
 
-    private int targetId;
-
-    public LogicTurnLeftCommand(int targetId) {
+    public LogicTurnLeftCommand(int targetId, int tick) {
+        this.tick = tick;
         this.targetId = targetId;
+        this.type = LogicCommand.TURN_LEFT;
     }
 
-    @Override
-    public int getType() {
-        return LogicCommand.TURN_LEFT;
-    }
-
-    @Override
-    public int getTargetId() {
-        return targetId;
-    }
 }

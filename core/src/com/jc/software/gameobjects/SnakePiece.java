@@ -1,5 +1,6 @@
 package com.jc.software.gameobjects;
 
+import com.jc.software.GameConfiguration;
 import com.jc.software.logic.objects.LogicGame;
 import com.jc.software.logic.objects.LogicSnakePiece;
 
@@ -8,17 +9,14 @@ import com.jc.software.logic.objects.LogicSnakePiece;
  */
 public class SnakePiece extends BaseGameObject {
 
-    private LogicGame logicGame;
-
-    public SnakePiece(LogicGame logicGame) {
-        super("square_blue.png", logicGame.getLogicSnakePiece().getX(), logicGame.getLogicSnakePiece().getY());
-        this.logicGame = logicGame;
+    public SnakePiece() {
+        super("square_blue.png", 0, 0);
     }
 
-    public void render() {
+    public void render(LogicGame logicGame) {
         LogicSnakePiece snakePiece = logicGame.getLogicSnakePiece();
-        setX(snakePiece.getX());
-        setY(snakePiece.getY());
+        setX(snakePiece.getTileX() * GameConfiguration.TILE_SIZE);
+        setY(snakePiece.getTileY() * GameConfiguration.TILE_SIZE);
     }
 
 }

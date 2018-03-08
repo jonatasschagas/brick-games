@@ -1,12 +1,17 @@
 package com.jc.software.gameobjects;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.jc.software.GameConfiguration;
 import com.jc.software.logic.objects.LogicGame;
 import com.jc.software.logic.objects.LogicSnake;
 import com.jc.software.logic.objects.LogicSnakeSegment;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import static com.jc.software.GameConfiguration.TILE_SIZE;
 
 /**
  * Created by jonataschagas on 25/01/18.
@@ -14,39 +19,41 @@ import java.util.List;
 public class Snake implements GameObject {
 
     private List<SnakeNode> snakeNodeList;
-    private LogicGame logicGame;
+    private long playerId;
+    private int playerNumber;
 
-    public Snake(LogicGame logicGame) {
+    public Snake(long playerId, int playerNumber) {
+        this.playerNumber = playerNumber;
         snakeNodeList = new ArrayList<SnakeNode>();
-        this.logicGame = logicGame;
-        LogicSnake logicSnake = logicGame.getLogicSnake();
-        snakeNodeList.add(new SnakeNode(logicSnake.getX(), logicSnake.getY()));
+        snakeNodeList.add(new SnakeNode(0, 0, playerNumber));
+        this.playerId = playerId;
     }
 
     @Override
-    public void render(SpriteBatch batch) {
-        LogicSnake logicSnake = logicGame.getLogicSnake();
-        int i = 0;
-        for (LogicSnakeSegment snakeSegment : logicSnake.getSnakeSegmentList()) {
-            renderSnakeSegment(snakeSegment, i, batch);
-            i++;
+    public void render(LogicGame logicGame, SpriteBatch batch) {
+        LogicSnake logicSnake = logicGame.getSnakeByPlayerId(playerId);
+        for(int i = 0; i < logicSnake.getSnakeSegmentList().size(); i++) {
+            renderSnakeSegment(logicGame, logicSnake.getSnakeSegmentList().get(i), i, batch);
         }
     }
 
-    private void renderSnakeSegment(LogicSnakeSegment segment, int nodeIndex, SpriteBatch batch) {
+    private void renderSnakeSegment(LogicGame logicGame, LogicSnakeSegment snakeSegment, int nodeIndex, SpriteBatch batch) {
+
+        float x = snakeSegment.getTileX() * TILE_SIZE;
+        float y = snakeSegment.getTileY() * TILE_SIZE;
 
         if (nodeIndex >= snakeNodeList.size()) {
-            snakeNodeList.add(new SnakeNode(segment.getX(), segment.getY()));
+            snakeNodeList.add(new SnakeNode(x, y, playerNumber));
         }
 
         // only one node now.
         SnakeNode snakeNode = snakeNodeList.get(nodeIndex);
 
         // update the cordinates
-        snakeNode.setX(segment.getX());
-        snakeNode.setY(segment.getY());
+        snakeNode.setX(x);
+        snakeNode.setY(y);
 
-        snakeNode.render(batch);
+        snakeNode.render(logicGame, batch);
     }
 
     @Override

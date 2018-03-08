@@ -1,59 +1,78 @@
 package com.jc.software.logic.objects;
 
+import com.jc.software.GameConfiguration;
+import com.jc.software.logic.commands.LogicCommand;
+import com.jc.software.logic.util.Utils;
+
+import java.nio.ByteBuffer;
+
 /**
  * Created by jonataschagas on 28/01/18.
  */
-public class LogicSnakeSegment {
+public class LogicSnakeSegment implements LogicGameObject {
 
     private LogicSnake.Direction currentDirection;
-    private int currentTileX;
-    private int currentTileY;
-    private float x;
-    private float y;
+    private int tileX;
+    private int tileY;
+    private int id;
 
-    public LogicSnakeSegment(LogicSnake.Direction currentDirection, int currentTileX, int currentTileY) {
+    public LogicSnakeSegment() {}
+
+    public LogicSnakeSegment(int id, LogicSnake.Direction currentDirection, int currentTileX, int currentTileY) {
         this.currentDirection = currentDirection;
-        this.currentTileX = currentTileX;
-        this.currentTileY = currentTileY;
+        this.tileX = currentTileX;
+        this.tileY = currentTileY;
+        this.id = id;
     }
 
     public LogicSnake.Direction getCurrentDirection() {
         return currentDirection;
     }
 
-    public void setCurrentDirection(LogicSnake.Direction currentDirection) {
-        this.currentDirection = currentDirection;
+    @Override
+    public void executeCommand(LogicCommand command) {}
+
+    @Override
+    public void update(int tick) {}
+
+    @Override
+    public int getId() {
+        return id;
     }
 
-    public int getCurrentTileX() {
-        return currentTileX;
+    @Override
+    public int getTileX() {
+        return tileX;
     }
 
-    public void setCurrentTileX(int currentTileX) {
-        this.currentTileX = currentTileX;
+    public void setTileX(int tileX) {
+        this.tileX = tileX;
     }
 
-    public int getCurrentTileY() {
-        return currentTileY;
+    @Override
+    public int getTileY() {
+        return tileY;
     }
 
-    public void setCurrentTileY(int currentTileY) {
-        this.currentTileY = currentTileY;
+    public void setTileY(int tileY) {
+        this.tileY = tileY;
     }
 
-    public float getX() {
-        return x;
+    @Override
+    public void encode(ByteBuffer byteBuffer) {
+        byteBuffer.putInt(currentDirection.ordinal());
+        long location = Utils.asLong(tileX, tileY);
+        byteBuffer.putLong(location);
+        byteBuffer.putInt(id);
     }
 
-    public void setX(float x) {
-        this.x = x;
+    @Override
+    public void decode(ByteBuffer byteBuffer) {
+        currentDirection = LogicSnake.Direction.values()[byteBuffer.getInt()];
+        long location = byteBuffer.getLong();
+        tileX = Utils.getX(location);
+        tileY = Utils.getY(location);
+        id = byteBuffer.getInt();
     }
 
-    public float getY() {
-        return y;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
 }

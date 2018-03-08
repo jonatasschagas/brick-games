@@ -2,6 +2,8 @@ package com.jc.software.logic.objects;
 
 import com.jc.software.logic.commands.LogicCommand;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by jonataschagas on 25/01/18.
  */
@@ -9,16 +11,16 @@ public interface LogicGameObject {
 
     void executeCommand(LogicCommand command);
 
-    void update(float deltaTime);
+    void update(int tick);
 
     int getId();
 
-    float getX();
+    int getTileX();
 
-    float getY();
+    int getTileY();
 
-    float getWidth();
+    void encode(ByteBuffer byteBuffer);
 
-    float getHeight();
+    void decode(ByteBuffer byteBuffer);
 
 }

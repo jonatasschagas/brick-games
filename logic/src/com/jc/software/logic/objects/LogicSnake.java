@@ -2,10 +2,11 @@ package com.jc.software.logic.objects;
 
 import com.jc.software.GameConfiguration;
 import com.jc.software.logic.commands.LogicCommand;
-import com.jc.software.logic.commands.LogicIncreaseSnakeLengthCommand;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static com.jc.software.GameConfiguration.*;
 
@@ -16,145 +17,125 @@ public class LogicSnake implements LogicGameObject {
 
     private int id;
     private Direction bufferedDirection;
-    private float currentTime;
-    private LogicGame logicGame;
+    private int lastTick;
     private List<LogicSnakeSegment> snakeSegmentList;
-    private LogicSnakeSegment head;
+    private long playerId;
+    private int playerNumber;
 
-    public LogicSnake(LogicGame logicGame) {
-        id = logicGame.getNextRandomInt();
-        bufferedDirection = Direction.UP;
-        currentTime = 0;
-        this.logicGame = logicGame;
+    public LogicSnake() {}
+
+    public LogicSnake(int id, long playerId, int playerNumber) {
+        this.id = id;
+        lastTick = 0;
         snakeSegmentList = new ArrayList<LogicSnakeSegment>();
-        snakeSegmentList.add(new LogicSnakeSegment(Direction.UP, GameConfiguration.SCREEN_WIDTH_IN_TILES / 2, 0));
-        head = snakeSegmentList.get(0);
+        this.playerId = playerId;
+        this.playerNumber = playerNumber;
+        initialize();
+    }
+
+    private void initialize() {
+        if (playerNumber == 1) {
+            bufferedDirection = Direction.UP;
+            snakeSegmentList.add(new LogicSnakeSegment(getNextSnakeSegmentId(), Direction.UP, GameConfiguration.SCREEN_WIDTH_IN_TILES / 2, 0));
+        } else {
+            bufferedDirection = Direction.DOWN;
+            snakeSegmentList.add(new LogicSnakeSegment(getNextSnakeSegmentId(), Direction.DOWN, GameConfiguration.SCREEN_WIDTH_IN_TILES / 2 - 2, GameConfiguration.SCREEN_HEIGHT_IN_TILES));
+        }
     }
 
     @Override
     public void executeCommand(LogicCommand command) {
+
+        Direction newDirection = null;
+
         switch (command.getType()) {
             case LogicCommand.TURN_UP:
-                bufferedDirection = Direction.UP;
+                newDirection  = Direction.UP;
                 break;
             case LogicCommand.TURN_DOWN:
-                bufferedDirection = Direction.DOWN;
+                newDirection  = Direction.DOWN;
                 break;
             case LogicCommand.TURN_LEFT:
-                bufferedDirection = Direction.LEFT;
+                newDirection  = Direction.LEFT;
                 break;
             case LogicCommand.TURN_RIGHT:
-                bufferedDirection = Direction.RIGHT;
-                break;
-            case LogicIncreaseSnakeLengthCommand.INCREASE_SNAKE_LENGTH:
-
-                LogicSnakeSegment lastSegment = snakeSegmentList.get(snakeSegmentList.size() - 1);
-                LogicSnakeSegment snakeSegment = new LogicSnakeSegment(lastSegment.getCurrentDirection(),
-                        lastSegment.getCurrentTileX(), lastSegment.getCurrentTileY());
-
-                switch (snakeSegment.getCurrentDirection()) {
-                    case UP:
-                        snakeSegment.setCurrentTileY(snakeSegment.getCurrentTileY() - 1);
-                        break;
-                    case DOWN:
-                        snakeSegment.setCurrentTileY(snakeSegment.getCurrentTileY() + 1);
-                        break;
-                    case LEFT:
-                        snakeSegment.setCurrentTileX(snakeSegment.getCurrentTileX() + 1);
-                        break;
-                    case RIGHT:
-                        snakeSegment.setCurrentTileX(snakeSegment.getCurrentTileX() - 1);
-                        break;
-                }
-                snakeSegment.setX(snakeSegment.getCurrentTileX() * TILE_SIZE);
-                snakeSegment.setY(snakeSegment.getCurrentTileY() * TILE_SIZE);
-                snakeSegmentList.add(snakeSegment);
+                newDirection  = Direction.RIGHT;
                 break;
         }
+
+        if(!areDirectionsOpposite(newDirection, bufferedDirection)) {
+            bufferedDirection = newDirection;
+        }
+
     }
 
-    @Override
-    public void update(float deltaTime) {
+    public void increaseSnakeLength() {
+        LogicSnakeSegment lastSegment = snakeSegmentList.get(snakeSegmentList.size() - 1);
+        LogicSnakeSegment snakeSegment = new LogicSnakeSegment(getNextSnakeSegmentId(), lastSegment.getCurrentDirection(),
+                lastSegment.getTileX(), lastSegment.getTileY());
 
-        float weight = currentTime / TIME_PER_TILE;
-
-        for (LogicSnakeSegment snakeSegment : snakeSegmentList) {
-
-            int nextTileX = snakeSegment.getCurrentTileX();
-            int nextTileY = snakeSegment.getCurrentTileY();
-
-            switch (snakeSegment.getCurrentDirection()) {
-                case UP:
-                    nextTileY++;
-                    break;
-                case DOWN:
-                    nextTileY--;
-                    break;
-                case LEFT:
-                    nextTileX--;
-                    break;
-                case RIGHT:
-                    nextTileX++;
-                    break;
-            }
-
-            float sX = snakeSegment.getCurrentTileX() * TILE_SIZE;
-            float sY = snakeSegment.getCurrentTileY() * TILE_SIZE;
-            float tX = nextTileX * TILE_SIZE;
-            float tY = nextTileY * TILE_SIZE;
-
-            snakeSegment.setX(lerp(sX, tX, weight));
-            snakeSegment.setY(lerp(sY, tY, weight));
-
-            // setting the limits
-            if (snakeSegment.getCurrentTileY() > SCREEN_HEIGHT_IN_TILES) {
-                snakeSegment.setCurrentTileY(0);
-            } else if (snakeSegment.getCurrentTileY() < 0) {
-                snakeSegment.setCurrentTileY(SCREEN_HEIGHT_IN_TILES);
-            } else if (snakeSegment.getCurrentTileX() > SCREEN_WIDTH_IN_TILES) {
-                snakeSegment.setCurrentTileX(0);
-            } else if (snakeSegment.getCurrentTileX() < 0) {
-                snakeSegment.setCurrentTileX(SCREEN_WIDTH_IN_TILES);
-            }
-
+        switch (snakeSegment.getCurrentDirection()) {
+            case UP:
+                snakeSegment.setTileY(snakeSegment.getTileY()- 1);
+                break;
+            case DOWN:
+                snakeSegment.setTileY(snakeSegment.getTileY() + 1);
+                break;
+            case LEFT:
+                snakeSegment.setTileX(snakeSegment.getTileX() + 1);
+                break;
+            case RIGHT:
+                snakeSegment.setTileX(snakeSegment.getTileX() - 1);
+                break;
         }
+        snakeSegmentList.add(snakeSegment);
+    }
 
-        if (weight > 1) {
+    private int getNextSnakeSegmentId() {
+        return GAME_ID_SNAKE_SEGMENT_START_RANGE + snakeSegmentList.size();
+    }
 
-            currentTime = 0;
 
-            for (LogicSnakeSegment snakeSegment : snakeSegmentList) {
+    @Override
+    public void update(int tick) {
 
-                switch (snakeSegment.getCurrentDirection()) {
-                    case UP:
-                        snakeSegment.setCurrentTileY(snakeSegment.getCurrentTileY() + 1);
-                        break;
-                    case DOWN:
-                        snakeSegment.setCurrentTileY(snakeSegment.getCurrentTileY() - 1);
-                        break;
-                    case LEFT:
-                        snakeSegment.setCurrentTileX(snakeSegment.getCurrentTileX() - 1);
-                        break;
-                    case RIGHT:
-                        snakeSegment.setCurrentTileX(snakeSegment.getCurrentTileX() + 1);
-                        break;
+        int deltaTick = tick - lastTick;
+
+        if (deltaTick >= SNAKE_VELOCITY) {
+
+            lastTick = tick;
+
+            for (int i = snakeSegmentList.size() - 1; i >= 0; i--) {
+
+                LogicSnakeSegment snakeSegment = snakeSegmentList.get(i);
+
+                int nextTileX;
+                int nextTileY;
+
+                if (i == 0) {
+                    nextTileX = getNextTileX(0);
+                    nextTileY = getNextTileY(0);
+                } else {
+                    LogicSnakeSegment nextSeg = snakeSegmentList.get(i - 1);
+                    nextTileX = nextSeg.getTileX();
+                    nextTileY = nextSeg.getTileY();
+                }
+
+                snakeSegment.setTileX(nextTileX);
+                snakeSegment.setTileY(nextTileY);
+
+                // setting the limits
+                if (snakeSegment.getTileY() > SCREEN_HEIGHT_IN_TILES) {
+                    snakeSegment.setTileY(0);
+                } else if (snakeSegment.getTileY() < 0) {
+                    snakeSegment.setTileY(SCREEN_HEIGHT_IN_TILES);
+                } else if (snakeSegment.getTileX() > SCREEN_WIDTH_IN_TILES) {
+                    snakeSegment.setTileX(0);
+                } else if (snakeSegment.getTileX() < 0) {
+                    snakeSegment.setTileX(SCREEN_WIDTH_IN_TILES);
                 }
             }
-
-            for (int i = snakeSegmentList.size() - 1; i > 0; i--) {
-                LogicSnakeSegment currentSegment = snakeSegmentList.get(i);
-                LogicSnakeSegment nextSegment = snakeSegmentList.get(i - 1);
-                currentSegment.setCurrentDirection(nextSegment.getCurrentDirection());
-            }
-
-            // don't allow the snake to turn to opposite directions
-            if (bufferedDirection != head.getCurrentDirection() && !areDirectionsOpposite(bufferedDirection, head.getCurrentDirection())) {
-                head.setCurrentDirection(bufferedDirection);
-            }
         }
-
-        currentTime += deltaTime;
-
     }
 
     private boolean areDirectionsOpposite(Direction d1, Direction d2) {
@@ -166,29 +147,53 @@ public class LogicSnake implements LogicGameObject {
         return (1 - t) * v0 + t * v1;
     }
 
+   /* public float getX(int segmentIndex) {
+        return lerp(snakeSegmentList.get(segmentIndex).getTileX() * TILE_SIZE, getNextTileX(segmentIndex) * TILE_SIZE, currentWeight);
+    }
+
+    public float getY(int segmentIndex) {
+        return lerp(snakeSegmentList.get(segmentIndex).getTileY() * TILE_SIZE, getNextTileY(segmentIndex) * TILE_SIZE, currentWeight);
+    }*/
+
+    private int getNextTileX(int segmentIndex) {
+        int nextTileX = snakeSegmentList.get(segmentIndex).getTileX();
+        switch (bufferedDirection) {
+            case LEFT:
+                nextTileX--;
+                break;
+            case RIGHT:
+                nextTileX++;
+                break;
+        }
+        return nextTileX;
+    }
+
+    private int getNextTileY(int segmentIndex) {
+        int nextTileY = snakeSegmentList.get(segmentIndex).getTileY();
+        switch (bufferedDirection) {
+            case UP:
+                nextTileY++;
+                break;
+            case DOWN:
+                nextTileY--;
+                break;
+        }
+        return nextTileY;
+    }
+
     @Override
     public int getId() {
         return id;
     }
 
     @Override
-    public float getX() {
-        return 0;
+    public int getTileX() {
+        return snakeSegmentList.get(0).getTileX();
     }
 
     @Override
-    public float getY() {
-        return 0;
-    }
-
-    @Override
-    public float getWidth() {
-        return 0;
-    }
-
-    @Override
-    public float getHeight() {
-        return 0;
+    public int getTileY() {
+        return snakeSegmentList.get(0).getTileY();
     }
 
     public List<LogicSnakeSegment> getSnakeSegmentList() {
@@ -196,13 +201,60 @@ public class LogicSnake implements LogicGameObject {
     }
 
     public LogicSnakeSegment getHead() {
-        return head;
+        return snakeSegmentList.get(0);
     }
 
-    enum Direction {
+    public Direction getBufferedDirection() {
+        return bufferedDirection;
+    }
+
+    public long getPlayerId() {
+        return playerId;
+    }
+
+    public enum Direction {
         UP,
         DOWN,
         LEFT,
         RIGHT
     }
+
+
+    @Override
+    public void encode(ByteBuffer byteBuffer) {
+        byteBuffer.putInt(id);
+        byteBuffer.putInt(bufferedDirection.ordinal());
+        byteBuffer.putInt(lastTick);
+        byteBuffer.putInt(playerNumber);
+        byteBuffer.putLong(playerId);
+        byteBuffer.putInt(snakeSegmentList != null ? snakeSegmentList.size(): 0);
+        for(LogicSnakeSegment snakeSegment: snakeSegmentList) {
+            snakeSegment.encode(byteBuffer);
+        }
+    }
+
+    @Override
+    public void decode(ByteBuffer byteBuffer) {
+        id = byteBuffer.getInt();
+        bufferedDirection = Direction.values()[byteBuffer.getInt()];
+        lastTick = byteBuffer.getInt();
+        playerNumber = byteBuffer.getInt();
+        playerId = byteBuffer.getLong();
+        int snakeSegmentListSize = byteBuffer.getInt();
+        if(snakeSegmentList == null) {
+            snakeSegmentList = new ArrayList<>();
+        }
+        for(int i = 0; i < snakeSegmentListSize; i++) {
+            LogicSnakeSegment snakeSegment;
+            if(i > snakeSegmentList.size() - 1) {
+                snakeSegment = new LogicSnakeSegment();
+                snakeSegment.decode(byteBuffer);
+                snakeSegmentList.add(snakeSegment);
+            } else {
+                snakeSegment = snakeSegmentList.get(i);
+                snakeSegment.decode(byteBuffer);
+            }
+        }
+    }
+
 }

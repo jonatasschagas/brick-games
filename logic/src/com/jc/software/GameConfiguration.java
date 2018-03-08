@@ -14,7 +14,18 @@ public interface GameConfiguration {
     int SCREEN_WIDTH_IN_TILES = SCREEN_WIDTH/ TILE_SIZE;
     int SCREEN_HEIGHT_IN_TILES = SCREEN_HEIGHT/ TILE_SIZE;
 
-    // time = 100ms
-    float TIME_PER_TILE = 100.0f/1000.0f;
+    float FPS = 60.0f;
+    float FRAME_PERIOD = (1000f/FPS)/1000f;
+    int MAX_FRAMES_SKIPPED = 5;
+
+    // s = v*t
+    // t = s/v
+    // s/t
+    float SNAKE_VELOCITY = FPS/10;
+
+    // IDs
+    int GAME_ID_SNAKE_PIECE = 9000;
+    int GAME_ID_SNAKE_SEGMENT_START_RANGE = 3;
+
 
 }

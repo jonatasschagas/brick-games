@@ -3,6 +3,7 @@ package com.jc.software.gameobjects;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.jc.software.logic.objects.LogicGame;
 
 /**
  * Created by jonataschagas on 25/01/18.
@@ -38,12 +39,12 @@ public abstract class BaseGameObject implements GameObject {
     }
 
     @Override
-    public void render(SpriteBatch batch) {
-        render();
+    public void render(LogicGame logicGame, SpriteBatch batch) {
+        render(logicGame);
         batch.draw(texture, rectangle.getX(), rectangle.getY());
     }
 
-    public abstract void render();
+    public abstract void render(LogicGame logicGame);
 
     public void dispose() {
         texture.dispose();

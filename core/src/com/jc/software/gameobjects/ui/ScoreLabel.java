@@ -12,22 +12,27 @@ import com.jc.software.logic.objects.LogicGame;
 public class ScoreLabel implements GameObject {
 
     private BitmapFont font;
-    private LogicGame logicGame;
-    private float x;
-    private float y;
+    private long playerId;
 
-    public ScoreLabel(LogicGame logicGame) {
+    public ScoreLabel(long playerId) {
         font = new BitmapFont();
-        this.logicGame = logicGame;
-        this.x = GameConfiguration.SCREEN_WIDTH - GameConfiguration.TILE_SIZE * 3;
-        this.y = GameConfiguration.SCREEN_HEIGHT - GameConfiguration.TILE_SIZE * 2;
+        this.playerId = playerId;
     }
 
     @Override
-    public void render(SpriteBatch batch) {
-        int score = logicGame.getScore();
+    public void render(LogicGame logicGame, SpriteBatch batch) {
+        int score = logicGame.getScoreByPlayerId(playerId);
+        int playerNumber = logicGame.getPlayerNumber(playerId);
+
+        float x = GameConfiguration.SCREEN_WIDTH - GameConfiguration.TILE_SIZE * 3;
+        float y = GameConfiguration.SCREEN_HEIGHT - GameConfiguration.TILE_SIZE * 2;
+        if(playerNumber == 1) {
+            font.draw(batch, "Player 1: " + score, x, y);
+        } else {
+            x = 5;
+            font.draw(batch, "Player 2: " + score, x, y);
+        }
         font.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        font.draw(batch, "Score: " + score, x, y);
     }
 
     @Override

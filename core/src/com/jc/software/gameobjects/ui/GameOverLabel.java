@@ -12,22 +12,20 @@ import com.jc.software.logic.objects.LogicGame;
 public class GameOverLabel implements GameObject {
 
     private BitmapFont font;
-    private LogicGame logicGame;
     private float x;
     private float y;
 
-    public GameOverLabel(LogicGame logicGame) {
+    public GameOverLabel() {
         font = new BitmapFont();
-        this.logicGame = logicGame;
         this.x = GameConfiguration.SCREEN_WIDTH / 2;
         this.y = GameConfiguration.SCREEN_HEIGHT / 2;
     }
 
     @Override
-    public void render(SpriteBatch batch) {
-        if (logicGame.getGameState() == LogicGame.GameState.GAME_OVER) {
+    public void render(LogicGame logicGame, SpriteBatch batch) {
+        if (logicGame.getGameStatus() == LogicGame.GameStatus.GAME_OVER) {
             font.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            font.draw(batch, "Game Over! Press enter to restart.", x, y);
+            font.draw(batch, "GameScreen Over! Press enter to exit.", x, y);
         }
     }
 
